@@ -46,7 +46,18 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Camera Example',
       theme: ThemeData(),
-      home: TakePictureScreen(camera: camera),
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('Pictures',
+          style: TextStyle(
+            fontSize: 32.0,
+            fontWeight: FontWeight.w400,
+            fontFamily: "Montserrat",
+            ),
+          ),
+        ),
+        body: TakePictureScreen(camera: camera),
+      ),
     );
   }
 }
