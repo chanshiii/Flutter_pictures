@@ -90,24 +90,28 @@ class TakePictureScreenState extends State<TakePictureScreen> {
   }
 
   // 画像ファイルをFirebaseのストレージバケットにアップロードする関数:change2
-  Future<void> uploadImageToFirebase(File imageFile) async {
+  Future<String> uploadImageToFirebase(File imageFile) async {
     try {
       // Firebaseのストレージバケットの参照を取得
       FirebaseStorage storage = FirebaseStorage.instance;
       Reference storageRef = storage.ref();
 
       // 画像ファイルをアップロード
-      TaskSnapshot snapshot = await storageRef.child('images/${imageFile.name}').putFile(imageFile);
+      String fileName = Path.basename(imageFile.path);
+      TaskSnapshot snapshot = await storageRef.child('images/$fileName').putFile(imageFile);
 
     // アップロードが成功した場合の処理
       if (snapshot.state == TaskState.success) {
         // アップロード後の画像のダウンロードURLを取得
         String downloadURL = await snapshot.ref.getDownloadURL();
         // ダウンロードURLを使って何かしらの処理を行うことができます
-        print('Download URL: $downloadURL');
+        return downloadURL;
+      } else {
+        throw Exception('Error in uploading image');
       }
     } catch (error) {
         print('Error uploading image to Firebase: $error');
+        throw error;
       }
     }
   //change2
@@ -133,12 +137,12 @@ class TakePictureScreenState extends State<TakePictureScreen> {
           final image = await _controller.takePicture();
           // ここでimageファイルを引数にuploadImageToFirebase関数を呼び出す //chage4
           File imgFile = File(image.path);
-          await uploadImageToFirebase(imgFile);
+          String imageUrl = await uploadImageToFirebase(imgFile);
           //change4
           // 表示用の画面に遷移
           await Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (context) => DisplayPictureScreen(imagePath: image.path),
+              builder: (context) => DisplayPictureScreen(imageUrl: imageUrl),
               fullscreenDialog: true,
             ),
           );
@@ -221,9 +225,9 @@ class TakePictureScreenState extends State<TakePictureScreen> {
 // -----------------------------------------------------
 // 撮影後に保存ボタンを追加し、保存に失敗のエラーが出る
   class DisplayPictureScreen extends StatelessWidget {
-  const DisplayPictureScreen({Key? key, required this.imagePath}) : super(key: key);
+  const DisplayPictureScreen({Key? key, required this.imageUrl}) : super(key: key);
 
-  final String imagePath;
+  final String imageUrl;
 
   @override
   Widget build(BuildContext context) {
@@ -231,11 +235,11 @@ class TakePictureScreenState extends State<TakePictureScreen> {
       appBar: AppBar(title: const Text('撮れた写真')),
       body: Center(
         // child: Image.network(imagePath), //change3
-        child: Image.file(File(imagePath)),
+        child: Image.file(File(imageUrl)),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          _saveImageToDevice(imagePath, context);
+          _saveImageToDevice(imageUrl);
         },
         child: Icon(Icons.save),
       ),
@@ -279,21 +283,19 @@ class TakePictureScreenState extends State<TakePictureScreen> {
 // -----------------------------------------------------
 
 // 画像をデバイスに保存する関数//all追記
-  Future<void> _saveImageToDevice(String imagePath, BuildContext context) async {
+  Future<void> _saveImageToDevice(String imageUrl) async {
     try {
-      final appDir = await getApplicationDocumentsDirectory();
-      final fileName = imagePath.split('/').last;
-      final savePath = '${appDir.path}/$fileName';
-      final imageFile = File(imagePath);
-      await imageFile.copy(savePath);
+      // Firebase Firestoreの参照を取得
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('画像を保存しました')),
-      );
+      // 新しいドキュメントを作成し、画像のURLを保存
+      await firestore.collection('images').add({
+        'url': imageUrl,
+        'timestamp': FieldValue.serverTimestamp(), // サーバーのタイムスタンプ
+      });
     } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('画像の保存に失敗しました')),
-      );
+      print('Error saving image url to Firestore: $error');
+      throw error;
     }
   }
 }
