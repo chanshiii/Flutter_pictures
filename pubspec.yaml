@@ -53,6 +53,7 @@ dependencies:
   flutter_riverpod: ^2.3.6
   flutter_signin_button: ^2.0.0
   firebase_storage: ^11.2.4
+  firebase_core: ^2.14.0
 
 dev_dependencies:
   flutter_test:
