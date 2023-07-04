@@ -19,7 +19,7 @@ Future<void> main() async {
 
   //FireStore利用:変更１
   await Firebase.initializeApp(
-    // options: DefaultFirebaseOptions.currentPlatform,
+    options: DefaultFirebaseOptions.currentPlatform,
   );
 
   // デバイスで使用可能なカメラのリストを取得
@@ -88,6 +88,29 @@ class TakePictureScreenState extends State<TakePictureScreen> {
     super.dispose();
   }
 
+  // 画像ファイルをFirebaseのストレージバケットにアップロードする関数:change2
+  Future<void> uploadImageToFirebase(File imageFile) async {
+    try {
+      // Firebaseのストレージバケットの参照を取得
+      FirebaseStorage storage = FirebaseStorage.instance;
+      Reference storageRef = storage.ref();
+
+      // 画像ファイルをアップロード
+      TaskSnapshot snapshot = await storageRef.child('images/${imageFile.name}').putFile(imageFile);
+
+    // アップロードが成功した場合の処理
+      if (snapshot.state == TaskState.success) {
+        // アップロード後の画像のダウンロードURLを取得
+        String downloadURL = await snapshot.ref.getDownloadURL();
+        // ダウンロードURLを使って何かしらの処理を行うことができます
+        print('Download URL: $downloadURL');
+      }
+    } catch (error) {
+        print('Error uploading image to Firebase: $error');
+      }
+    }
+  //change2
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -107,6 +130,10 @@ class TakePictureScreenState extends State<TakePictureScreen> {
         onPressed: () async {
           // 写真を撮る
           final image = await _controller.takePicture();
+          // ここでimageファイルを引数にuploadImageToFirebase関数を呼び出す //chage4
+          File imgFile = File(image.path);
+          await uploadImageToFirebase(imgFile);
+          //change4
           // 表示用の画面に遷移
           await Navigator.of(context).push(
             MaterialPageRoute(
@@ -202,7 +229,8 @@ class TakePictureScreenState extends State<TakePictureScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('撮れた写真')),
       body: Center(
-        child: Image.network(imagePath),
+        // child: Image.network(imagePath), //change3
+        child: Image.file(File(imagePath)),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -212,39 +240,60 @@ class TakePictureScreenState extends State<TakePictureScreen> {
       ),
     );
   }
+  //change3
+  // Future<void> _saveImageToDevice(String imagePath, BuildContext context) async {
+  //   try {
+  //     final imageFile = File(imagePath);
+  //     final imageBytes = imageFile.readAsBytesSync();
 
+  //     final base64Image = base64Encode(imageBytes);
+  //     final response = await http.post(
+  //       Uri.parse('https://example.com/save-image'), // 画像を保存するエンドポイントのURLに置き換えてください
+  //       body: {'image': base64Image},
+  //     );
+
+      // if (response.statusCode == 200) {  
+      //   ScaffoldMessenger.of(context).showSnackBar(
+      //     SnackBar(content: Text('画像を保存しました')),
+      //   );
+      // } else {  
+      //   ScaffoldMessenger.of(context).showSnackBar(
+      //     SnackBar(content: Text('画像の保存に失敗しました')),
+      //   );
+      // }
+    // } catch (e) { 
+  //     }
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(content: Text('画像の保存に失敗しました')),
+  //     );
+  //   }
+  // }
+
+  // Future<String> _getSavePath() async {
+  //   final directory = await getApplicationDocumentsDirectory();
+  //   final timestamp = DateTime.now().millisecondsSinceEpoch;
+  //   final fileName = 'Image_$timestamp.jpg';
+  //   return '${directory.path}/$fileName';
+  // }
+// -----------------------------------------------------
+
+// 画像をデバイスに保存する関数//all追記
   Future<void> _saveImageToDevice(String imagePath, BuildContext context) async {
     try {
+      final appDir = await getApplicationDocumentsDirectory();
+      final fileName = imagePath.split('/').last;
+      final savePath = '${appDir.path}/$fileName';
       final imageFile = File(imagePath);
-      final imageBytes = imageFile.readAsBytesSync();
+      await imageFile.copy(savePath);
 
-      final base64Image = base64Encode(imageBytes);
-      final response = await http.post(
-        Uri.parse('https://example.com/save-image'), // 画像を保存するエンドポイントのURLに置き換えてください
-        body: {'image': base64Image},
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('画像を保存しました')),
       );
-
-      if (response.statusCode == 200) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('画像を保存しました')),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('画像の保存に失敗しました')),
-        );
-      }
-    } catch (e) {
+    } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('画像の保存に失敗しました')),
       );
     }
   }
 }
-
-  Future<String> _getSavePath() async {
-    final directory = await getApplicationDocumentsDirectory();
-    final timestamp = DateTime.now().millisecondsSinceEpoch;
-    final fileName = 'Image_$timestamp.jpg';
-    return '${directory.path}/$fileName';
-  }
-// -----------------------------------------------------
+//change3
