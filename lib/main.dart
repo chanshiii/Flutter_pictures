@@ -17,6 +17,11 @@ Future<void> main() async {
   // main 関数内で非同期処理を呼び出すための設定
   WidgetsFlutterBinding.ensureInitialized();
 
+  //FireStore利用:変更１
+  await Firebase.initializeApp(
+    // options: DefaultFirebaseOptions.currentPlatform,
+  );
+
   // デバイスで使用可能なカメラのリストを取得
   final cameras = await availableCameras();
 
