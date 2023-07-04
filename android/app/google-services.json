@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "351519301946",
+    "project_id": "flutter-camera-413de",
+    "storage_bucket": "flutter-camera-413de.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:351519301946:android:8ffebc041c61267159f003",
+        "android_client_info": {
+          "package_name": "com.example.flutter_camera"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "351519301946-qq4sc0s35rsqs4nbgqp2uqkbtutqhth4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAtaCr374J5_2foBxhEy32S1IIPaQGey5U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "351519301946-qq4sc0s35rsqs4nbgqp2uqkbtutqhth4.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "351519301946-029agquhs9poc1fbsp22b8vo3ed4htms.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.flutterCamera.RunnerTests"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
