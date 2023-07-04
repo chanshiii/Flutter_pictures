@@ -45,7 +45,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Camera Example',
-      theme: ThemeData(),
+      theme: ThemeData(
+        primarySwatch: Colors.teal,
+      ),
       home: Scaffold(
         appBar: AppBar(
           title: Text('Pictures',
