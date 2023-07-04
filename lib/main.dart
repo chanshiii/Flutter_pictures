@@ -235,7 +235,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
       appBar: AppBar(title: const Text('撮れた写真')),
       body: Center(
         // child: Image.network(imagePath), //change3
-        child: Image.file(File(imageUrl)),
+        child: Image.network(imageUrl),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
